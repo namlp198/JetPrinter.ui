@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="JetPrinter.ui.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="KGKPrinterIP1" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.11</Value>
+    </Setting>
+    <Setting Name="KGKPrinterIP2" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.12</Value>
+    </Setting>
+    <Setting Name="KGKPrinterIP3" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.13</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
