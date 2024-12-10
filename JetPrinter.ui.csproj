@@ -48,6 +48,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Converters.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ImageList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -56,6 +60,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="converters\ConnectionStateConverter.cs" />
+    <Compile Include="converters\PrinterStateConverter.cs" />
     <Compile Include="KGKJetPrinterView.xaml.cs">
       <DependentUpon>KGKJetPrinterView.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -128,6 +134,12 @@
       <Project>{04d210e9-89b2-435f-a16e-0618ad2279dd}</Project>
       <Name>KGKJetPrinterLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\KGKImage\CIRCLE_YELLOW.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\KGKImage\CIRCLE_GRAY.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

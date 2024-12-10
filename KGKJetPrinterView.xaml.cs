@@ -24,8 +24,21 @@ namespace JetPrinter.ui
 
     public partial class KGKJetPrinterView : UserControl, INotifyPropertyChanged
     {
+        public static DependencyProperty MessageContentProperty = DependencyProperty.Register("MessageContent", typeof(string), typeof(KGKJetPrinterView), new PropertyMetadata(default(string), OnMessageContentChanged));
+
+        private static void OnMessageContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            KGKJetPrinterView KGKPrinter = d as KGKJetPrinterView;
+            if (KGKPrinter != null)
+            {
+                
+            }
+        }
+
         private KGKJetPrinter m_printer;
         private long m_nKgkPort = 1024;
+        private string m_dateTimeSelected = DateTime.Now.ToString("ddMMyyyy");
+        
         public KGKJetPrinter KGKPrinter { get => m_printer; }
 
         public KGKJetPrinterView(string ip)
@@ -87,14 +100,25 @@ namespace JetPrinter.ui
             }
         }
 
-        private int m_nIdx;
-        public int Index
+        public string DateTimeSelected
         { 
-            get => m_nIdx;
+            get => m_dateTimeSelected;
             set
             {
-                m_nIdx = value;
-                OnPropertyChanged("Index");
+                m_dateTimeSelected = value;
+                OnPropertyChanged("DateTimeSelected");
+            }
+        }
+       
+        public string MessageContent
+        {
+            get
+            {
+                return (string)GetValue(MessageContentProperty);
+            }
+            set
+            {
+                SetValue(MessageContentProperty, value);
             }
         }
 
@@ -108,7 +132,34 @@ namespace JetPrinter.ui
 
         private void btnPrintStartStop_Click(object sender, RoutedEventArgs e)
         {
-            m_printer.StartPrinting();
+            if (m_printer.GetPrinterState == KGKJetPrinter.PrinterState.NotPrinting)
+            {
+                m_printer.StartPrinting();
+                btnPrintStartStop.Background = new SolidColorBrush(Colors.Green);
+                btnPrintStartStop.Content = "Bắt đầu in";
+            }
+            else if(m_printer.GetPrinterState == KGKJetPrinter.PrinterState.Printing)
+            {
+                m_printer.StopPrinting();
+                btnPrintStartStop.Background = new SolidColorBrush(Colors.OrangeRed);
+                btnPrintStartStop.Content = "Dừng in";
+            }
+        }
+
+        private void datePickerPrinter_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var datePicker = sender as DatePicker;
+            if (datePicker != null)
+            {
+                var datetime = datePicker.SelectedDate.Value;
+                if (datetime != null)
+                {
+                    DateTimeSelected = datetime.ToString("ddMMyyyy");
+
+                    MessageContent = string.Empty;
+                    MessageContent += DateTimeSelected;
+                }
+            }
         }
     }
 }

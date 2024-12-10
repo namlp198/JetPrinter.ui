@@ -3,5 +3,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/JetPrinter.ui;component/ImageList.xaml"/>
         <ResourceDictionary Source="/JetPrinter.ui;component/Styles.xaml" />
+        <ResourceDictionary Source="/JetPrinter.ui;component/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

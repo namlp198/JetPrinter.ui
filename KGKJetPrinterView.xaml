@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:local="clr-namespace:JetPrinter.ui"
              xmlns:vm="clr-namespace:JetPrinter.ui"
              d:DataContext="{d:DesignInstance vm:KGKJetPrinterView}"
@@ -35,7 +36,7 @@
 
                 <Grid Width="auto"
                       Height="auto">
-                    <Image Source="/JetPrinter.ui;component/resources/KGKImage/KGK_OK.png"
+                    <Image Source="{Binding KGKPrinter.GetPrinterState, Converter={StaticResource PrinterStateToPrinterImagePathConverter}}"
                            VerticalAlignment="Top"
                            HorizontalAlignment="Center"
                            Margin="5 10 5 5"
@@ -53,11 +54,11 @@
                             <Label.Content>
                                 <Grid>
                                     <StackPanel Orientation="Horizontal">
-                                        <Image Source="/JetPrinter.ui;component/resources/KGKImage/CONNECT_ON.png"
+                                        <Image Source="{Binding KGKPrinter.GetState, Converter={StaticResource ConnectionStateToImagePathConverter}}"
                                                Margin="25 5 5 5"
                                                Width="35"
                                                Height="35" />
-                                        <TextBlock Text="Đã kết nối máy in"
+                                        <TextBlock Text="{Binding KGKPrinter.GetState, Converter={StaticResource ConnectionStateToStringConverter}}"
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    TextAlignment="Center"
@@ -76,11 +77,11 @@
                             <Label.Content>
                                 <Grid>
                                     <StackPanel Orientation="Horizontal">
-                                        <Image Source="/JetPrinter.ui;component/resources/KGKImage/CIRCLE_GREEN.png"
+                                        <Image Source="{Binding KGKPrinter.GetPrinterState, Converter={StaticResource PrinterStateToIndicatorImagePathConverter}}"
                                                Margin="25 5 5 5"
                                                Width="35"
                                                Height="35" />
-                                        <TextBlock Text="Đang in"
+                                        <TextBlock Text="{Binding KGKPrinter.GetPrinterState, Converter={StaticResource PrinterStateToStringConverter}}"
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    TextAlignment="Center"
@@ -191,11 +192,11 @@
                                    TextAlignment="Center" />
                         <TextBox Margin="5 5 5 5"
                                  TextWrapping="Wrap"
-                                 FontSize="20"
+                                 FontSize="18"
                                  FontWeight="Bold"
                                  VerticalContentAlignment="Center"
                                  HorizontalContentAlignment="Center"
-                                 Text="EMPTY" />
+                                 Text="{Binding MessageContent}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1"
                                 Orientation="Vertical">
@@ -209,7 +210,10 @@
                         <DatePicker FontSize="16"
                                     FontWeight="SemiBold"
                                     VerticalAlignment="Center"
-                                    Margin="5" />
+                                    Margin="5"
+                                    SelectedDate="{x:Static sys:DateTime.Now}"
+                                    x:Name="datePickerPrinter"
+                                    SelectedDateChanged="datePickerPrinter_SelectedDateChanged"/>
                     </StackPanel>
                 </Grid>
                 <Grid VerticalAlignment="Center"

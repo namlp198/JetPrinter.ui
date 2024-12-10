@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cvts="clr-namespace:JetPrinter.ui.converters">
+    <cvts:ConnectionStateToStringConverter x:Key="ConnectionStateToStringConverter"/>
+    <cvts:ConnectionStateToImagePathConverter x:Key="ConnectionStateToImagePathConverter" />
+    <cvts:PrinterStateToStringConverter x:Key="PrinterStateToStringConverter"/>
+    <cvts:PrinterStateToIndicatorImagePathConverter x:Key="PrinterStateToIndicatorImagePathConverter"/>
+    <cvts:PrinterStateToPrinterImagePathConverter x:Key="PrinterStateToPrinterImagePathConverter"/>
+</ResourceDictionary>
