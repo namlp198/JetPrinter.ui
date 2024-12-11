@@ -228,7 +228,9 @@
                             Content="Đẩy bản tin"
                             FontSize="18"
                             FontWeight="Bold"
-                            Foreground="White" />
+                            Foreground="White"
+                            x:Name="btnPushMessage"
+                            Click="btnPushMessage_Click"/>
                     <Button Style="{StaticResource NewPopupButtonStyle}"
                             Background="Green"
                             Width="160"

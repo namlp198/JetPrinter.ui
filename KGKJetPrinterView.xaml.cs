@@ -90,6 +90,7 @@ namespace JetPrinter.ui
                 case KGKJetPrinter.ConnectionState.Connecting:
                     break;
                 case KGKJetPrinter.ConnectionState.Connected:
+                    //m_printer.GetMessageCurrent();
                     break;
                 case KGKJetPrinter.ConnectionState.Closing:
                     break;
@@ -160,6 +161,11 @@ namespace JetPrinter.ui
                     MessageContent += DateTimeSelected;
                 }
             }
+        }
+
+        private void btnPushMessage_Click(object sender, RoutedEventArgs e)
+        {
+            m_printer.UpdateTextModuleNoChangeAttributes(MessageContent);
         }
     }
 }
