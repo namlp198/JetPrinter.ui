@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static KGKJetPrinterLib.KGKJetPrinter;
 
 namespace JetPrinter.ui
 {
@@ -31,40 +32,126 @@ namespace JetPrinter.ui
             KGKJetPrinterView KGKPrinter = d as KGKJetPrinterView;
             if (KGKPrinter != null)
             {
-                
+
             }
         }
 
         private KGKJetPrinter m_printer;
         private long m_nKgkPort = 1024;
         private string m_dateTimeSelected = DateTime.Now.ToString("ddMMyyyy");
-        
+        private int m_nCurrentMessageNo = -1;
+        public int CurrentMessageNo
+        {
+            get => m_nCurrentMessageNo;
+            set
+            {
+                if (m_nCurrentMessageNo != value)
+                {
+                    m_nCurrentMessageNo = value;
+                    OnPropertyChanged("CurrentMessageNo");
+                }
+            }
+        }
+        private string m_sCurrentMessage = string.Empty;
+        public string CurrentMessage
+        {
+            get => m_sCurrentMessage;
+            set
+            {
+                m_sCurrentMessage = value;
+                OnPropertyChanged("CurrentMessage");
+            }
+        }
+        private string m_sPrinterState = string.Empty;
+        public string PrinterState
+        {
+            get => m_sPrinterState;
+            set
+            {
+                if(m_sPrinterState != value)
+                {
+                    m_sPrinterState = value;
+                    OnPropertyChanged("PrinterState");
+                }
+            }
+        }
+
         public KGKJetPrinter KGKPrinter { get => m_printer; }
+
+        private KGKJetPrinter.PrintHeadState m_printHeadState;
+        public KGKJetPrinter.PrintHeadState PrintHeadState
+        {
+            get => m_printHeadState;
+            set
+            {
+                m_printHeadState = value;
+                OnPropertyChanged("PrintHeadState");
+            }
+        }
+
+        private KGKJetPrinter.ConnectionState m_connectionState;
+        public KGKJetPrinter.ConnectionState ConnectionState
+        {
+            get => m_connectionState;
+            set
+            {
+                m_connectionState = value;
+                OnPropertyChanged("ConnectionState");
+            }
+        }
 
         public KGKJetPrinterView(string ip)
         {
             InitializeComponent();
 
             this.DataContext = this;
+            CurrentMessageNo = 7;
 
             m_printer = new KGKJetPrinter(ip, m_nKgkPort);
             m_printer.ConnectionStateChanged += M_printer_ConnectionStateChanged;
             m_printer.PrinterStateChanged += M_printer_PrinterStateChanged;
+            m_printer.Connected += M_printer_Connected;
 
             m_printer.ConnectPrinter();
         }
 
-        private void M_printer_PrinterStateChanged(KGKJetPrinter sender, KGKJetPrinter.PrinterState state)
+        private void M_printer_Connected(KGKJetPrinter sender)
         {
-            switch (state)
+            ConnectionState = KGKJetPrinter.ConnectionState.Connected;
+            if(m_printer.SelectMessage(m_nCurrentMessageNo))
             {
-                case KGKJetPrinter.PrinterState.Unknown:
+                CurrentMessage = "Bản tin số " + m_nCurrentMessageNo;
+            }
+        }
+
+        private void M_printer_PrinterStateChanged(KGKJetPrinter sender, PrintHeadState printHeadState, PrintHeadHeaterState heaterState,
+            LiquidQuantity inkTankState, LiquidQuantity solventState, LiquidQuantity mainTankState, VisicosityState visState)
+        {
+            switch (printHeadState)
+            {
+                case KGKJetPrinter.PrintHeadState.Unknown:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.Unknown;
                     break;
-                case KGKJetPrinter.PrinterState.NotPrinting:
+                case KGKJetPrinter.PrintHeadState.Stopping:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.Stopping;
                     break;
-                case KGKJetPrinter.PrinterState.Printing:
+                case KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen;
                     break;
-                case KGKJetPrinter.PrinterState.Fault:
+                case KGKJetPrinter.PrintHeadState.PreparationOfRunning:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.PreparationOfRunning;
+                    break;
+                case KGKJetPrinter.PrintHeadState.PreparationOfRunningAndCoverOpen:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.PreparationOfRunningAndCoverOpen;
+                    break;
+                case KGKJetPrinter.PrintHeadState.Running:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.Running;
+                    break;
+                case KGKJetPrinter.PrintHeadState.PreparationOfStopping:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.PreparationOfStopping;
+                    break;
+                case KGKJetPrinter.PrintHeadState.Maintenance:
+                    PrintHeadState = KGKJetPrinter.PrintHeadState.Maintenance;
                     break;
                 default:
                     break;
@@ -76,25 +163,35 @@ namespace JetPrinter.ui
             switch (state)
             {
                 case KGKJetPrinter.ConnectionState.Closed:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Closed;
                     break;
                 case KGKJetPrinter.ConnectionState.Open:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Open;
                     break;
                 case KGKJetPrinter.ConnectionState.Listening:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Listening;
                     break;
                 case KGKJetPrinter.ConnectionState.ConnectionPending:
+                    ConnectionState = KGKJetPrinter.ConnectionState.ConnectionPending;
                     break;
                 case KGKJetPrinter.ConnectionState.ResolvingHost:
+                    ConnectionState = KGKJetPrinter.ConnectionState.ResolvingHost;
                     break;
                 case KGKJetPrinter.ConnectionState.HostResolved:
+                    ConnectionState = KGKJetPrinter.ConnectionState.HostResolved;
                     break;
                 case KGKJetPrinter.ConnectionState.Connecting:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Connecting;
                     break;
                 case KGKJetPrinter.ConnectionState.Connected:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Connected;
                     //m_printer.GetMessageCurrent();
                     break;
                 case KGKJetPrinter.ConnectionState.Closing:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Closing;
                     break;
                 case KGKJetPrinter.ConnectionState.Error:
+                    ConnectionState = KGKJetPrinter.ConnectionState.Error;
                     break;
                 default:
                     break;
@@ -102,7 +199,7 @@ namespace JetPrinter.ui
         }
 
         public string DateTimeSelected
-        { 
+        {
             get => m_dateTimeSelected;
             set
             {
@@ -110,7 +207,7 @@ namespace JetPrinter.ui
                 OnPropertyChanged("DateTimeSelected");
             }
         }
-       
+
         public string MessageContent
         {
             get
@@ -133,17 +230,14 @@ namespace JetPrinter.ui
 
         private void btnPrintStartStop_Click(object sender, RoutedEventArgs e)
         {
-            if (m_printer.GetPrinterState == KGKJetPrinter.PrinterState.NotPrinting)
+            if (m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Stopping ||
+                m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen)
             {
                 m_printer.StartPrinting();
-                btnPrintStartStop.Background = new SolidColorBrush(Colors.Green);
-                btnPrintStartStop.Content = "Bắt đầu in";
             }
-            else if(m_printer.GetPrinterState == KGKJetPrinter.PrinterState.Printing)
+            else if(m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Running)
             {
                 m_printer.StopPrinting();
-                btnPrintStartStop.Background = new SolidColorBrush(Colors.OrangeRed);
-                btnPrintStartStop.Content = "Dừng in";
             }
         }
 
@@ -165,7 +259,10 @@ namespace JetPrinter.ui
 
         private void btnPushMessage_Click(object sender, RoutedEventArgs e)
         {
-            m_printer.UpdateTextModuleNoChangeAttributes(MessageContent);
+            if(m_printer.UpdateTextModuleNoChangeAttributes(MessageContent))
+            {
+                tbContentMessage.Text = MessageContent;
+            }
         }
     }
 }

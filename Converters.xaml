@@ -6,4 +6,6 @@
     <cvts:PrinterStateToStringConverter x:Key="PrinterStateToStringConverter"/>
     <cvts:PrinterStateToIndicatorImagePathConverter x:Key="PrinterStateToIndicatorImagePathConverter"/>
     <cvts:PrinterStateToPrinterImagePathConverter x:Key="PrinterStateToPrinterImagePathConverter"/>
+    <cvts:PrinterStateToBackgroundButtonConverter x:Key="PrinterStateToBackgroundButtonConverter"/>
+    <cvts:PrinterStateToTextButtonConverter x:Key="PrinterStateToTextButtonConverter"/>
 </ResourceDictionary>
