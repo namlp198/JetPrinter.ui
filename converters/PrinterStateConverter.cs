@@ -28,13 +28,13 @@ namespace JetPrinter.ui.converters
                 case KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen:
                     return "Dừng in và đầu in mở";
                 case KGKJetPrinter.PrintHeadState.PreparationOfRunning:
-                    return "Chuẩn bị in ...";
+                    return "Đang chuẩn bị in...";
                 case KGKJetPrinter.PrintHeadState.PreparationOfRunningAndCoverOpen:
                     return "Chuẩn bị in và đầu in mở";
                 case KGKJetPrinter.PrintHeadState.Running:
                     return "Đang in";
                 case KGKJetPrinter.PrintHeadState.PreparationOfStopping:
-                    return "Chuẩn bị dừng in ...";
+                    return "Đang dừng in...";
                 case KGKJetPrinter.PrintHeadState.Maintenance:
                     return "Bảo trì máy in";
                 default:
@@ -163,12 +163,44 @@ namespace JetPrinter.ui.converters
                 case KGKJetPrinter.PrintHeadState.PreparationOfStopping:
                 case KGKJetPrinter.PrintHeadState.PreparationOfRunningAndCoverOpen:
                 case KGKJetPrinter.PrintHeadState.PreparationOfRunning:
-                    return "Đợi ...";
+                    return "Đợi...";
                 case KGKJetPrinter.PrintHeadState.Unknown:
                 case KGKJetPrinter.PrintHeadState.Maintenance:
                     return "Chưa rõ";
                 default:
                     return "";
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class PrinterStateToBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null)
+                return true;
+
+            var state = (KGKJetPrinterLib.KGKJetPrinter.PrintHeadState)value;
+
+            switch (state)
+            {
+                case KGKJetPrinter.PrintHeadState.Stopping:
+                case KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen:
+                case KGKJetPrinter.PrintHeadState.Running:
+                    return true;
+
+                case KGKJetPrinter.PrintHeadState.Unknown:
+                case KGKJetPrinter.PrintHeadState.Maintenance:
+                case KGKJetPrinter.PrintHeadState.PreparationOfStopping:
+                case KGKJetPrinter.PrintHeadState.PreparationOfRunningAndCoverOpen:
+                case KGKJetPrinter.PrintHeadState.PreparationOfRunning:
+                    return false;
+                default:
+                    return true;
             }
         }
 

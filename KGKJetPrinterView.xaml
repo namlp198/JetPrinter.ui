@@ -8,8 +8,8 @@
              xmlns:vm="clr-namespace:JetPrinter.ui"
              d:DataContext="{d:DesignInstance vm:KGKJetPrinterView}"
              mc:Ignorable="d"
-             d:DesignHeight="650"
-             d:DesignWidth="500"
+             d:DesignHeight="550"
+             d:DesignWidth="450"
              Background="WhiteSmoke">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -18,7 +18,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
+    <Grid Opacity="{Binding ConnectionState, Converter={StaticResource ConnectionStateToOpacityConverter}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="2.8*" />
             <RowDefinition Height="1.4*" />
@@ -30,22 +30,47 @@
                 Margin="5 5 5 0">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="1.1*" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
-                <Grid Width="auto"
-                      Height="auto">
-                    <Image Source="{Binding PrintHeadState, Converter={StaticResource PrinterStateToPrinterImagePathConverter}}"
-                           VerticalAlignment="Top"
-                           HorizontalAlignment="Center"
-                           Margin="5 10 5 5"
-                           Stretch="UniformToFill"
-                           Width="300"
-                           Height="300" />
-                    <StackPanel VerticalAlignment="Bottom"
-                                HorizontalAlignment="Stretch"
-                                Margin="5 5 5 10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="1.8*"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Image Source="{Binding PrintHeadState, Converter={StaticResource PrinterStateToPrinterImagePathConverter}}"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Center"
+                               Margin="5 10 5 5"
+                               Stretch="Uniform"
+                               Width="auto"
+                               Height="auto" />
+                        <TextBlock VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Margin="12 30 0 0"
+                                   Text="{Binding PrinterName}"
+                                   FontSize="14"
+                                   Foreground="OrangeRed"
+                                   FontWeight="Bold"/>
+                    </Grid>
+                    <StackPanel Orientation="Vertical"
+                                Grid.Row="1"
+                                Margin="0 5 0 10">
+                        <Button Style="{StaticResource NewPopupButtonStyle}"
+                                Background="{Binding ConnectionState, Converter={StaticResource ConnectionStateToButtonBackgroundConverter}}"
+                                Width="125"
+                                Height="30"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Margin="5"
+                                Content="{Binding ConnectionState, Converter={StaticResource ConnectionStateToButtonContentConverter}}"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                x:Name="btnConnection"
+                                Click="btnConnection_Click" />
                         <Label Width="auto"
                                Height="auto"
                                Margin="2"
@@ -55,16 +80,16 @@
                                 <Grid>
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding ConnectionState, Converter={StaticResource ConnectionStateToImagePathConverter}}"
-                                               Margin="25 5 5 5"
-                                               Width="35"
-                                               Height="35" />
+                                               Margin="5 5 0 5"
+                                               Width="25"
+                                               Height="25" />
                                         <TextBlock Text="{Binding ConnectionState, Converter={StaticResource ConnectionStateToStringConverter}}"
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    TextAlignment="Center"
-                                                   FontSize="16"
+                                                   FontSize="14"
                                                    FontWeight="Bold"
-                                                   Margin="8 2 2 2" />
+                                                   Margin="5 2 2 2" />
                                     </StackPanel>
                                 </Grid>
                             </Label.Content>
@@ -78,16 +103,16 @@
                                 <Grid>
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding PrintHeadState, Converter={StaticResource PrinterStateToIndicatorImagePathConverter}}"
-                                               Margin="25 5 5 5"
-                                               Width="35"
-                                               Height="35" />
+                                               Margin="5 5 0 5"
+                                               Width="25"
+                                               Height="25" />
                                         <TextBlock Text="{Binding PrintHeadState, Converter={StaticResource PrinterStateToStringConverter}}"
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    TextAlignment="Center"
-                                                   FontSize="16"
+                                                   FontSize="14"
                                                    FontWeight="Bold"
-                                                   Margin="8 2 2 2" />
+                                                   Margin="5 2 2 2" />
                                     </StackPanel>
                                 </Grid>
                             </Label.Content>
@@ -121,15 +146,17 @@
                                        HorizontalAlignment="Left"
                                        Margin="5 8 2 2"
                                        TextAlignment="Center" />
-                            <TextBlock Text="empty"
+                            <TextBlock Text=""
                                        Name="tbContentMessage"
-                                       FontSize="18"
+                                       FontSize="22"
                                        FontWeight="Bold"
                                        FontStyle="Normal"
+                                       Foreground="OrangeRed"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
                                        Margin="5 2 2 2"
-                                       TextAlignment="Center" />
+                                       TextAlignment="Center" 
+                                       TextWrapping="Wrap"/>
                             <TextBlock Text="Số đếm in:"
                                        FontSize="16"
                                        FontWeight="SemiBold"
@@ -137,8 +164,8 @@
                                        HorizontalAlignment="Left"
                                        Margin="5 8 2 2"
                                        TextAlignment="Center"
-                                       Visibility="Hidden"/>
-                            <TextBlock Text="empty"
+                                       Visibility="Visible"/>
+                            <TextBlock Text="{Binding PrintCount}"
                                        FontSize="18"
                                        FontWeight="Bold"
                                        FontStyle="Normal"
@@ -146,7 +173,7 @@
                                        HorizontalAlignment="Center"
                                        Margin="5 2 2 2"
                                        TextAlignment="Center"
-                                       Visibility="Hidden" />
+                                       Visibility="Visible" />
                             <TextBlock Text="Trạng thái máy in:"
                                        FontSize="16"
                                        FontWeight="SemiBold"
@@ -163,7 +190,7 @@
                                        HorizontalAlignment="Center"
                                        Margin="5 2 2 2"
                                        TextAlignment="Center"
-                                       Visibility="Hidden"/>
+                                       Visibility="Hidden" />
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1">
@@ -195,9 +222,9 @@
                                    HorizontalAlignment="Left"
                                    Margin="5 5 2 2"
                                    TextAlignment="Center" />
-                        <TextBox Margin="5 5 5 5"
+                        <TextBox Margin="2 5 2 2"
                                  TextWrapping="Wrap"
-                                 FontSize="18"
+                                 FontSize="16"
                                  FontWeight="Bold"
                                  VerticalContentAlignment="Center"
                                  HorizontalContentAlignment="Center"
@@ -222,16 +249,17 @@
                     </StackPanel>
                 </Grid>
                 <Grid VerticalAlignment="Center"
-                      Margin="5 10 5 5"
+                      Margin="5 5 5 5"
                       Grid.Row="1">
                     <Button Style="{StaticResource NewPopupButtonStyle}"
                             Width="160"
-                            Height="50"
+                            Height="40"
+                            IsEnabled="{Binding PrintHeadState, Converter={StaticResource PrinterStateToBooleanConverter}}"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Left"
                             Margin="20 5 5 5"
                             Content="Đẩy bản tin"
-                            FontSize="18"
+                            FontSize="16"
                             FontWeight="Bold"
                             Foreground="White"
                             x:Name="btnPushMessage"
@@ -239,12 +267,12 @@
                     <Button Style="{StaticResource NewPopupButtonStyle}"
                             Background="{Binding PrintHeadState, Converter={StaticResource PrinterStateToBackgroundButtonConverter}}"
                             Width="160"
-                            Height="50"
+                            Height="40"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Right"
                             Margin="5 5 20 5"
                             Content="{Binding PrintHeadState, Converter={StaticResource PrinterStateToTextButtonConverter}}"
-                            FontSize="18"
+                            FontSize="16"
                             FontWeight="Bold"
                             Foreground="White" 
                             x:Name="btnPrintStartStop"

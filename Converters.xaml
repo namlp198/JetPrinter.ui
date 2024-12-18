@@ -3,9 +3,13 @@
                     xmlns:cvts="clr-namespace:JetPrinter.ui.converters">
     <cvts:ConnectionStateToStringConverter x:Key="ConnectionStateToStringConverter"/>
     <cvts:ConnectionStateToImagePathConverter x:Key="ConnectionStateToImagePathConverter" />
+    <cvts:ConnectionStateToButtonBackgroundConverter x:Key="ConnectionStateToButtonBackgroundConverter"/>
+    <cvts:ConnectionStateToButtonContentConverter x:Key="ConnectionStateToButtonContentConverter"/>
+    <cvts:ConnectionStateToOpacityConverter x:Key="ConnectionStateToOpacityConverter"/>
     <cvts:PrinterStateToStringConverter x:Key="PrinterStateToStringConverter"/>
     <cvts:PrinterStateToIndicatorImagePathConverter x:Key="PrinterStateToIndicatorImagePathConverter"/>
     <cvts:PrinterStateToPrinterImagePathConverter x:Key="PrinterStateToPrinterImagePathConverter"/>
     <cvts:PrinterStateToBackgroundButtonConverter x:Key="PrinterStateToBackgroundButtonConverter"/>
     <cvts:PrinterStateToTextButtonConverter x:Key="PrinterStateToTextButtonConverter"/>
+    <cvts:PrinterStateToBooleanConverter x:Key="PrinterStateToBooleanConverter"/>
 </ResourceDictionary>

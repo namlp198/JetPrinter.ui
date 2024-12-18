@@ -52,6 +52,19 @@ namespace JetPrinter.ui
                 }
             }
         }
+        private uint m_nPrintCount = 0;
+        public uint PrintCount
+        {
+            get => m_nPrintCount;
+            set
+            {
+                if (m_nPrintCount != value)
+                {
+                    m_nPrintCount = value;
+                    OnPropertyChanged("PrintCount");
+                }
+            }
+        }
         private string m_sCurrentMessage = string.Empty;
         public string CurrentMessage
         {
@@ -68,11 +81,20 @@ namespace JetPrinter.ui
             get => m_sPrinterState;
             set
             {
-                if(m_sPrinterState != value)
+                if (m_sPrinterState != value)
                 {
                     m_sPrinterState = value;
                     OnPropertyChanged("PrinterState");
                 }
+            }
+        }
+        private string m_sPrinterName = string.Empty;
+        public string PrinterName
+        {
+            get => m_sPrinterName;
+            set
+            {
+                m_sPrinterName = value;
             }
         }
 
@@ -100,26 +122,46 @@ namespace JetPrinter.ui
             }
         }
 
-        public KGKJetPrinterView(string ip)
+        public KGKJetPrinterView(string ip, int orderPrinter)
         {
             InitializeComponent();
 
             this.DataContext = this;
-            CurrentMessageNo = 7;
+            CurrentMessageNo = 2; // select message no 2
+            PrinterName = "MÁY IN " + orderPrinter;
 
             m_printer = new KGKJetPrinter(ip, m_nKgkPort);
+            m_printer.AutoReconnect = false; // not auto reconnect
             m_printer.ConnectionStateChanged += M_printer_ConnectionStateChanged;
             m_printer.PrinterStateChanged += M_printer_PrinterStateChanged;
             m_printer.Connected += M_printer_Connected;
+            m_printer.Disconnected += M_printer_Disconnected;
+            m_printer.PrintCountChanged += M_printer_PrintCountChanged;
+        }
 
-            m_printer.ConnectPrinter();
+        private void M_printer_PrintCountChanged(KGKJetPrinter sender)
+        {
+            PrintCount = m_printer._LastPrintCount;
+        }
+
+        private void M_printer_Disconnected(KGKJetPrinter sender)
+        {
+            CurrentMessage = "";
+            PrintCount = 0;
+            m_printer._LastPrintCount = 0;
+            tbContentMessage.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                //MessageContent = "";
+                tbContentMessage.Text = "";
+            }));
         }
 
         private void M_printer_Connected(KGKJetPrinter sender)
         {
             ConnectionState = KGKJetPrinter.ConnectionState.Connected;
-            if(m_printer.SelectMessage(m_nCurrentMessageNo))
+            if (m_printer.SelectMessage(m_nCurrentMessageNo))
             {
+                m_printer.CurrentMessageNo = m_nCurrentMessageNo;
                 CurrentMessage = "Bản tin số " + m_nCurrentMessageNo;
             }
         }
@@ -235,9 +277,13 @@ namespace JetPrinter.ui
             {
                 m_printer.StartPrinting();
             }
-            else if(m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Running)
+            else if (m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Running)
             {
-                m_printer.StopPrinting();
+                string s = string.Format("{0}{1} {2}", "Dừng in ", PrinterName, "?");
+                if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    m_printer.StopPrinting();
+                }
             }
         }
 
@@ -259,9 +305,30 @@ namespace JetPrinter.ui
 
         private void btnPushMessage_Click(object sender, RoutedEventArgs e)
         {
-            if(m_printer.UpdateTextModuleNoChangeAttributes(MessageContent))
+            string s = string.Format("{0}{1} {2}", "Đẩy bản tin này cho ", PrinterName, "?");
+            if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                tbContentMessage.Text = MessageContent;
+                if (m_printer.UpdateTextModuleNoChangeAttributes(MessageContent, 2))
+                {
+                    if(m_printer.ResetPrintCounter(CurrentMessageNo))
+                    {
+                        m_printer._LastPrintCount = 0;
+                        PrintCount = 0;
+                    }
+                    tbContentMessage.Text = MessageContent;
+                }
+            }
+        }
+
+        private void btnConnection_Click(object sender, RoutedEventArgs e)
+        {
+            if (ConnectionState == ConnectionState.Connected)
+            {
+                m_printer.DisconnectPrinter();
+            }
+            else
+            {
+                m_printer.ConnectPrinter();
             }
         }
     }
