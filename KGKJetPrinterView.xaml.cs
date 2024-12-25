@@ -38,7 +38,7 @@ namespace JetPrinter.ui
 
         private KGKJetPrinter m_printer;
         private long m_nKgkPort = 1024;
-        private string m_dateTimeSelected = DateTime.Now.ToString("ddMMyyyy");
+        private string m_dateTimeSelected = DateTime.Now.ToString("ddMMyy");
         private int m_nCurrentMessageNo = -1;
         public int CurrentMessageNo
         {
@@ -295,7 +295,7 @@ namespace JetPrinter.ui
                 var datetime = datePicker.SelectedDate.Value;
                 if (datetime != null)
                 {
-                    DateTimeSelected = datetime.ToString("ddMMyyyy");
+                    DateTimeSelected = datetime.ToString("ddMMyy");
 
                     MessageContent = string.Empty;
                     MessageContent += DateTimeSelected;

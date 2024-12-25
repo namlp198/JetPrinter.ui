@@ -164,7 +164,7 @@
                                        HorizontalAlignment="Left"
                                        Margin="5 8 2 2"
                                        TextAlignment="Center"
-                                       Visibility="Visible"/>
+                                       Visibility="Hidden"/>
                             <TextBlock Text="{Binding PrintCount}"
                                        FontSize="18"
                                        FontWeight="Bold"
@@ -173,7 +173,7 @@
                                        HorizontalAlignment="Center"
                                        Margin="5 2 2 2"
                                        TextAlignment="Center"
-                                       Visibility="Visible" />
+                                       Visibility="Hidden" />
                             <TextBlock Text="Trạng thái máy in:"
                                        FontSize="16"
                                        FontWeight="SemiBold"
