@@ -80,6 +80,8 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="converters\ConnectionStateConverter.cs" />
+    <Compile Include="converters\ViscosityStateConverter.cs" />
+    <Compile Include="converters\LiquidQuantityStateConverter.cs" />
     <Compile Include="converters\PrinterStateConverter.cs" />
     <Compile Include="KGKJetPrinterView.xaml.cs">
       <DependentUpon>KGKJetPrinterView.xaml</DependentUpon>
@@ -159,6 +161,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="resources\KGKImage\CIRCLE_GRAY.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\KGKImage\empty_tank.png" />
+    <Resource Include="resources\KGKImage\full_tank.png" />
+    <Resource Include="resources\KGKImage\low_tank.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
