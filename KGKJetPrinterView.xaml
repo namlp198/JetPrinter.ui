@@ -253,12 +253,12 @@
                                     <Label.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Margin="0 0 0 0"
-                                                       FontSize="12"
+                                                       FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Text="Độ Nhớt:"
                                                        VerticalAlignment="Center" />
                                             <TextBlock Margin="10 0 0 0"
-                                                       FontSize="12"
+                                                       FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Foreground="{Binding ViscosityState, Converter={StaticResource ViscosityStateToForeground}}"
                                                        Text="{Binding ViscosityState, Converter={StaticResource ViscosityStateToString}}"

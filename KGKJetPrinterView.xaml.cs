@@ -37,12 +37,55 @@ namespace JetPrinter.ui
             }
         }
 
+        public delegate void PrintDoneHanlder(List<string> data);
+        public event PrintDoneHanlder PrintCompletedEvent;
+
         private List<string> m_lstProductionShift = new List<string>() { "Ca 1", "Ca 2", "Ca 3"};
+        private List<string> m_listPrintCompleteData = new List<string>();
+
         private KGKJetPrinter m_printer;
         private long m_nKgkPort = 1024;
         private string m_dateTimeSelected = DateTime.Now.ToString("ddMMyy");
         private int m_nCurrentMessageNo = -1;
 
+        private string m_strStartTimePrint = string.Empty;
+        private string m_strEndTimePrint = string.Empty;
+        private string m_strDeliveryCode = string.Empty;
+        public string DeliveryCode
+        {
+            get => m_strDeliveryCode;
+            set => m_strDeliveryCode = value;
+        }
+
+        public KGKJetPrinterView()
+        {
+
+        }
+        public KGKJetPrinterView(string ip, int printerOrder)
+        {
+            InitializeComponent();
+
+            this.DataContext = this;
+            
+            Initialize(ip, printerOrder);
+        }
+        
+        private void Initialize(string ip, int printerOrder)
+        {
+            CurrentMessageNo = 2; // select message no 2
+            PrinterOrder = printerOrder;
+            PrinterName = "MÁY IN " + printerOrder;
+            cbbProductionShift.ItemsSource = m_lstProductionShift;
+            cbbProductionShift.SelectedIndex = 0;
+
+            m_printer = new KGKJetPrinter(ip, m_nKgkPort);
+            m_printer.AutoReconnect = false; // not auto reconnect
+            m_printer.ConnectionStateChanged += M_printer_ConnectionStateChanged;
+            m_printer.PrinterStateChanged += M_printer_PrinterStateChanged;
+            m_printer.Connected += M_printer_Connected;
+            m_printer.Disconnected += M_printer_Disconnected;
+            m_printer.PrintCountChanged += M_printer_PrintCountChanged;
+        }
         public int CurrentMessageNo
         {
             get => m_nCurrentMessageNo;
@@ -99,6 +142,13 @@ namespace JetPrinter.ui
             {
                 m_sPrinterName = value;
             }
+        }
+
+        private int m_nPrinterOrder;
+        public int PrinterOrder
+        {
+            get => m_nPrinterOrder;
+            set => m_nPrinterOrder = value;
         }
 
         private bool m_bPrintDone = true;
@@ -176,25 +226,6 @@ namespace JetPrinter.ui
                 m_connectionState = value;
                 OnPropertyChanged("ConnectionState");
             }
-        }
-
-        public KGKJetPrinterView(string ip, int orderPrinter)
-        {
-            InitializeComponent();
-
-            this.DataContext = this;
-            CurrentMessageNo = 2; // select message no 2
-            PrinterName = "MÁY IN " + orderPrinter;
-            cbbProductionShift.ItemsSource = m_lstProductionShift;
-            cbbProductionShift.SelectedIndex = 0;
-
-            m_printer = new KGKJetPrinter(ip, m_nKgkPort);
-            m_printer.AutoReconnect = false; // not auto reconnect
-            m_printer.ConnectionStateChanged += M_printer_ConnectionStateChanged;
-            m_printer.PrinterStateChanged += M_printer_PrinterStateChanged;
-            m_printer.Connected += M_printer_Connected;
-            m_printer.Disconnected += M_printer_Disconnected;
-            m_printer.PrintCountChanged += M_printer_PrintCountChanged;
         }
 
         private void M_printer_PrintCountChanged(KGKJetPrinter sender)
@@ -445,6 +476,7 @@ namespace JetPrinter.ui
                         Thread.Sleep(200);
                         if (m_printer.ResetPrintCounter(CurrentMessageNo))
                         {
+                            m_strStartTimePrint = DateTime.Now.ToString("HH:mm:ss");
                             m_printer._LastPrintCount = 0;
                             PrintCount = 0;
                             PrintDone = false;
@@ -460,12 +492,29 @@ namespace JetPrinter.ui
                 string s = string.Format("{0}{1}", PrinterName, " đã in xong bản tin này?");
                 if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
+                    // delete prev data
+                    m_listPrintCompleteData.Clear();
+
                     string printCount = m_printer.GetPrintCounter();
                     uint num = Convert.ToUInt32(printCount);
+                    PrintCount = num;
 
                     PrintDone = true;
                     btnPushMessage.Content = "Đẩy bản tin";
                     btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#4887d3");
+
+                    string date = DateTime.Now.ToString("dd-MM-yyyy");
+                    m_strEndTimePrint = DateTime.Now.ToString("HH:mm:ss");
+
+                    m_listPrintCompleteData.Add(date);
+                    m_listPrintCompleteData.Add(m_strStartTimePrint);
+                    m_listPrintCompleteData.Add(m_strEndTimePrint);
+                    m_listPrintCompleteData.Add(cbbProductionShift.SelectedItem.ToString());
+                    m_listPrintCompleteData.Add(DeliveryCode);
+                    m_listPrintCompleteData.Add(MessageContent);
+                    m_listPrintCompleteData.Add(printCount);
+
+                    PrintCompletedEvent?.Invoke(m_listPrintCompleteData);
                 }
             }
         }
