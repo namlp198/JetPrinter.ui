@@ -40,6 +40,9 @@ namespace JetPrinter.ui
         public delegate void PrintDoneHanlder(List<string> data);
         public event PrintDoneHanlder PrintCompletedEvent;
 
+        public delegate void ReportPrinterHandler(string data);
+        public event ReportPrinterHandler ReportFromPrinterEvent;
+
         private List<string> m_lstProductionShift = new List<string>() { "Ca 1", "Ca 2", "Ca 3"};
         private List<string> m_listPrintCompleteData = new List<string>();
 
@@ -175,45 +178,69 @@ namespace JetPrinter.ui
             }
         }
 
-        private KGKJetPrinter.LiquidQuantity m_inkTankState;
+        private KGKJetPrinter.LiquidQuantity m_inkTankState = LiquidQuantity.Unknown;
         public KGKJetPrinter.LiquidQuantity InkTankState
         {
             get => m_inkTankState;
             set
             {
-                m_inkTankState = value;
-                OnPropertyChanged("InkTankState");
+                if (m_inkTankState != value)
+                {
+                    m_inkTankState = value;
+                    OnPropertyChanged("InkTankState");
+
+                    string data = InkTankStateToMessage(m_inkTankState);
+                    ReportFromPrinterEvent?.Invoke(data);
+                }
             }
         }
-        private KGKJetPrinter.LiquidQuantity m_solventTankState;
+        private KGKJetPrinter.LiquidQuantity m_solventTankState = LiquidQuantity.Unknown;
         public KGKJetPrinter.LiquidQuantity SolventTankState
         {
             get => m_solventTankState;
             set
             {
-                m_solventTankState = value;
-                OnPropertyChanged("SolventTankState");
+                if (m_solventTankState != value)
+                {
+                    m_solventTankState = value;
+                    OnPropertyChanged("SolventTankState");
+
+                    string data = SolventTankStateToMessage(m_solventTankState);
+                    ReportFromPrinterEvent?.Invoke(data);
+                }
             }
         }
-        private KGKJetPrinter.LiquidQuantity m_mainTankState;
+        private KGKJetPrinter.LiquidQuantity m_mainTankState = LiquidQuantity.Unknown;
         public KGKJetPrinter.LiquidQuantity MainTankState
         {
             get => m_mainTankState;
             set
             {
-                m_mainTankState = value;
-                OnPropertyChanged("MainTankState");
+                if (m_mainTankState != value)
+                {
+                    m_mainTankState = value;
+                    OnPropertyChanged("MainTankState");
+
+                    string data = MainTankStateToMessage(m_mainTankState);
+                    ReportFromPrinterEvent?.Invoke(data);
+                }
             }
         }
 
-        private KGKJetPrinter.VisicosityState m_viscosityState;
+        private KGKJetPrinter.VisicosityState m_viscosityState = VisicosityState.Unknown;
         public KGKJetPrinter.VisicosityState ViscosityState
         {
             get => m_viscosityState;
             set
             {
-                m_viscosityState = value;
-                OnPropertyChanged("ViscosityState");
+                if (m_viscosityState != value)
+                {
+                    m_viscosityState = value;
+                    OnPropertyChanged("ViscosityState");
+
+                    string data = VisicosityStateToMessage(m_viscosityState);
+                    ReportFromPrinterEvent?.Invoke(data);
+                }
             }
         }
 
@@ -228,6 +255,78 @@ namespace JetPrinter.ui
             }
         }
 
+        private string InkTankStateToMessage(LiquidQuantity liquidQuantity)
+        {
+            switch (liquidQuantity)
+            {
+                case LiquidQuantity.Unknown:
+                    return "Không rõ";
+                case LiquidQuantity.Low:
+                    return "Bình mực ở mức thấp";
+                case LiquidQuantity.Full:
+                    return "Bình mực đã đầy";
+                case LiquidQuantity.Empty:
+                    return "Bình mực trống rỗng";
+                case LiquidQuantity.SensorTrouble:
+                    return "Cảm biến gặp vấn đề";
+                default:
+                    return "Không rõ";
+            }
+        }
+        private string SolventTankStateToMessage(LiquidQuantity liquidQuantity)
+        {
+            switch (liquidQuantity)
+            {
+                case LiquidQuantity.Unknown:
+                    return "Không rõ";
+                case LiquidQuantity.Low:
+                    return "Bình dung môi ở mức thấp";
+                case LiquidQuantity.Full:
+                    return "Bình dung môi đã đầy";
+                case LiquidQuantity.Empty:
+                    return "Bình dung môi trống rỗng";
+                case LiquidQuantity.SensorTrouble:
+                    return "Cảm biến gặp vấn đề";
+                default:
+                    return "Không rõ";
+            }
+        }
+        private string MainTankStateToMessage(LiquidQuantity liquidQuantity)
+        {
+            switch (liquidQuantity)
+            {
+                case LiquidQuantity.Unknown:
+                    return "Không rõ";
+                case LiquidQuantity.Low:
+                    return "Bình chính ở mức thấp";
+                case LiquidQuantity.Full:
+                    return "Bình chính đã đầy";
+                case LiquidQuantity.Empty:
+                    return "Bình chính trống rỗng";
+                case LiquidQuantity.SensorTrouble:
+                    return "Cảm biến gặp vấn đề";
+                default:
+                    return "Không rõ";
+            }
+        }
+        private string VisicosityStateToMessage(VisicosityState visicosityState)
+        {
+            switch (visicosityState)
+            {
+                case VisicosityState.Unknown:
+                    return "Không rõ";
+                case VisicosityState.Normal:
+                    return "Độ nhớt bình thường";
+                case VisicosityState.Low:
+                    return "Độ nhớt thấp";
+                case VisicosityState.High:
+                    return "Độ nhớt cao";
+                case VisicosityState.NotPerformed:
+                    return "Không thể điều chỉnh độ nhớt";
+                default:
+                    return "Không rõ";
+            }
+        }
         private void M_printer_PrintCountChanged(KGKJetPrinter sender)
         {
             PrintCount = m_printer._LastPrintCount;
