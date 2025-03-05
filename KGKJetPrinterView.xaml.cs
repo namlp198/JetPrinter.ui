@@ -555,7 +555,9 @@ namespace JetPrinter.ui
                 var datetime = datePicker.SelectedDate.Value;
                 if (datetime != null)
                 {
-                    DateTimeSelected = datetime.ToString("ddMMyy");
+                    // update 14022025
+                    DateTimeSelected = datetime.ToString("dd/MM/yyyy");
+                    DateTimeSelected = "NSX " + DateTimeSelected;
 
                     MessageContent = string.Empty;
                     MessageContent += DateTimeSelected;
