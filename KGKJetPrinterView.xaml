@@ -123,7 +123,7 @@
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition />
-                        <RowDefinition Height="1.5*"/>
+                        <RowDefinition Height="1.38*"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0">
                         <StackPanel Orientation="Vertical"
@@ -143,7 +143,7 @@
                                        HorizontalAlignment="Center"
                                        Margin="5 2 2 2"
                                        TextAlignment="Center" />
-                            <TextBlock Text="Nội dung bản tin:"
+                            <TextBlock Text="Nội dung đẩy xuống:"
                                        FontSize="14"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"
@@ -162,28 +162,33 @@
                                        TextAlignment="Center" 
                                        TextWrapping="Wrap"/>
                             <TextBlock Text="Số đếm in:"
+                                       Name="tbLabelPrintCount"
                                        FontSize="14"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Left"
                                        Margin="5 2 2 2"
                                        TextAlignment="Center"
-                                       Visibility="Hidden"/>
+                                       Visibility="Visible"/>
                             <TextBlock Text="{Binding PrintCount}"
-                                       FontSize="14"
+                                       Name="tbPrintCount"
+                                       FontSize="18"
                                        FontWeight="Bold"
                                        FontStyle="Normal"
+                                       Foreground="Blue"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
-                                       Margin="5 2 2 2"
+                                       Margin="5 2 2 0"
                                        TextAlignment="Center"
-                                       Visibility="Hidden" />
+                                       Visibility="Visible" />
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1">
                         <GroupBox Header="Trạng thái máy in"
+                                  Name="groupPrintState"
                                   FontSize="14"
-                                  FontWeight="Bold">
+                                  FontWeight="Bold"
+                                  Visibility="Visible">
                             <Grid Margin="2">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
@@ -289,7 +294,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Vertical">
-                        <TextBlock Text="Nhập bản tin:"
+                        <TextBlock Text="Nhập nội dung:"
                                    FontSize="16"
                                    FontWeight="SemiBold"
                                    VerticalAlignment="Center"
