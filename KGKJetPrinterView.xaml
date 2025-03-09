@@ -310,7 +310,8 @@
                                  Text="{Binding MessageContent}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1"
-                                Orientation="Vertical">
+                                Orientation="Vertical"
+                                Name="stackShiftProduction">
                         <TextBlock Text="Chọn ngày:"
                                    FontSize="14"
                                    FontWeight="SemiBold"

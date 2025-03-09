@@ -43,6 +43,9 @@ namespace JetPrinter.ui
         public delegate void ReportPrinterHandler(string data);
         public event ReportPrinterHandler ReportFromPrinterEvent;
 
+        public delegate void PrintCountIncreaseHandler(uint nPrintCount);
+        public event PrintCountIncreaseHandler PrintCountIncreaseEvent;
+
         private List<string> m_lstProductionShift = new List<string>() { "Ca 1", "Ca 2", "Ca 3" };
         private List<string> m_listPrintCompleteData = new List<string>();
 
@@ -55,6 +58,7 @@ namespace JetPrinter.ui
         private bool m_bUseTimerCheckPrintCount = true;
         private bool m_bUseTimerCheckPrintState = true;
         private bool m_bIsResetPrintCount = true;
+        private bool m_bVisibleStackShiftProduction = true;
 
         private string m_strStartTimePrint = string.Empty;
         private string m_strEndTimePrint = string.Empty;
@@ -226,6 +230,28 @@ namespace JetPrinter.ui
                     else
                     {
                         groupPrintState.Visibility = Visibility.Collapsed;
+                    }
+                }
+            }
+        }
+
+        public bool IsVisibleStackShiftProduction
+        {
+            get => m_bVisibleStackShiftProduction;
+            set
+            {
+                if (m_bVisibleStackShiftProduction != value)
+                {
+                    m_bVisibleStackShiftProduction = value;
+                    OnPropertyChanged("IsVisibleStackShiftProduction");
+
+                    if (m_bVisibleStackShiftProduction)
+                    {
+                        stackShiftProduction.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        stackShiftProduction.Visibility = Visibility.Collapsed;
                     }
                 }
             }
@@ -405,6 +431,8 @@ namespace JetPrinter.ui
         private void M_printer_PrintCountChanged(KGKJetPrinter sender)
         {
             PrintCount = m_printer._LastPrintCount;
+
+            PrintCountIncreaseEvent?.Invoke(PrintCount);
         }
 
         private void M_printer_Disconnected(KGKJetPrinter sender)
@@ -639,7 +667,13 @@ namespace JetPrinter.ui
                 }
             }
         }
-
+        public void ResetPrintCount()
+        {
+            if (m_printer.ResetPrintCounter(CurrentMessageNo))
+            {
+                MessageBox.Show("Reset Print Count Successfully!");
+            }
+        }
         private void btnPushMessage_Click(object sender, RoutedEventArgs e)
         {
             if (m_bPrintDone)
