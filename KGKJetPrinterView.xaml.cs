@@ -59,10 +59,12 @@ namespace JetPrinter.ui
         private bool m_bUseTimerCheckPrintState = true;
         private bool m_bIsResetPrintCount = true;
         private bool m_bVisibleStackShiftProduction = true;
+        private bool m_bAutoMode = false;
 
         private string m_strStartTimePrint = string.Empty;
         private string m_strEndTimePrint = string.Empty;
         private string m_strDeliveryCode = string.Empty;
+        private string m_strContentPrinting =string.Empty;
         public string DeliveryCode
         {
             get => m_strDeliveryCode;
@@ -98,14 +100,14 @@ namespace JetPrinter.ui
             m_printer.Disconnected += M_printer_Disconnected;
             m_printer.PrintCountChanged += M_printer_PrintCountChanged;
         }
-        public void SetParamsDefault(int nTextModule, bool bUseTimCheckPrintState, bool bUseTimCheckPrintCount, 
+        public void SetParamsDefault(int nTextModule, bool bUseTimCheckPrintState, bool bUseTimCheckPrintCount,
                                     int nDelayTimCheckPrintState, int nDelayTimCheckPrintCount, bool bIsResetPrintCount)
         {
             TextModule = nTextModule;
             IsResetPrintCount = bIsResetPrintCount;
 
-            m_printer.UseTimerCheckPrintState = bUseTimCheckPrintState;
-            m_printer.UseTimerCheckPrintCount = bUseTimCheckPrintCount;
+            m_printer.UseTimerCheckPrintState = UseTimerCheckPrintState = bUseTimCheckPrintState;
+            m_printer.UseTimerCheckPrintCount = UseTimerCheckPrintCount = bUseTimCheckPrintCount;
             m_printer.DelayTimeCheckPrintState = nDelayTimCheckPrintState;
             m_printer.DelayTimeCheckPrintCount = nDelayTimCheckPrintCount;
         }
@@ -263,6 +265,15 @@ namespace JetPrinter.ui
             {
                 m_bIsResetPrintCount = value;
                 OnPropertyChanged("IsResetPrintCount");
+            }
+        }
+        public bool UseAutoMode
+        {
+            get => m_bAutoMode;
+            set
+            {
+                m_bAutoMode = value;
+                OnPropertyChanged("UseAutoMode");
             }
         }
 
@@ -679,68 +690,87 @@ namespace JetPrinter.ui
             if (m_bPrintDone)
             {
                 string s = string.Format("{0}{1} {2}", "Đẩy nội dung này xuống cho ", PrinterName, "?");
-                if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-                {
-                    if (m_printer.UpdateTextModuleNoChangeAttributes(MessageContent, TextModule))
-                    {
-                        Thread.Sleep(200);
-                        if (IsResetPrintCount)
-                        {
-                            if (m_printer.ResetPrintCounter(CurrentMessageNo))
-                            {
-                                m_strStartTimePrint = DateTime.Now.ToString("HH:mm:ss");
-                                m_printer._LastPrintCount = 0;
-                                PrintCount = 0;
-                                PrintDone = false;
-                                btnPushMessage.Content = "Bản tin đang được in...";
-                                btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#00CC00");
-                            }
-                        }
-                        else
-                        {
-                            m_strStartTimePrint = DateTime.Now.ToString("HH:mm:ss");
-                            m_printer._LastPrintCount = 0;
-                            PrintDone = false;
-                            btnPushMessage.Content = "Bản tin đang được in...";
-                            btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#00CC00");
-                        }
 
-                        tbContentMessage.Text = MessageContent;
-                    }
+                if (UseAutoMode)
+                {
+                    PushMessage();
+                }
+                else
+                {
+                    if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                        PushMessage();
                 }
             }
             else
             {
                 string s = string.Format("{0}{1}", PrinterName, " đã in xong bản tin này?");
-                if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (UseAutoMode)
                 {
-                    // delete prev data
-                    m_listPrintCompleteData.Clear();
-
-                    string printCount = m_printer.GetPrintCounter();
-                    uint num = Convert.ToUInt32(printCount);
-                    PrintCount = num;
-
-                    PrintDone = true;
-                    btnPushMessage.Content = "Đẩy bản tin";
-                    btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#4887d3");
-
-                    string date = DateTime.Now.ToString("dd-MM-yyyy");
-                    m_strEndTimePrint = DateTime.Now.ToString("HH:mm:ss");
-
-                    m_listPrintCompleteData.Add(date);
-                    m_listPrintCompleteData.Add(m_strStartTimePrint);
-                    m_listPrintCompleteData.Add(m_strEndTimePrint);
-                    m_listPrintCompleteData.Add(cbbProductionShift.SelectedItem.ToString());
-                    m_listPrintCompleteData.Add(DeliveryCode);
-                    m_listPrintCompleteData.Add(MessageContent);
-                    m_listPrintCompleteData.Add(printCount);
-
-                    PrintCompletedEvent?.Invoke(m_listPrintCompleteData);
+                    StopPrint();
+                }
+                else
+                {
+                    if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                        StopPrint();
                 }
             }
         }
+        private void PushMessage()
+        {
+            if (m_printer.UpdateTextModuleNoChangeAttributes(MessageContent, TextModule))
+            {
+                Thread.Sleep(200);
+                if (IsResetPrintCount)
+                {
+                    if (m_printer.ResetPrintCounter(CurrentMessageNo))
+                    {
+                        m_strContentPrinting = MessageContent;
+                        m_strStartTimePrint = DateTime.Now.ToString("HH:mm:ss");
+                        m_printer._LastPrintCount = 0;
+                        PrintCount = 0;
+                        PrintDone = false;
+                        btnPushMessage.Content = "Bản tin đang được in...";
+                        btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#00CC00");
+                    }
+                }
+                else
+                {
+                    m_strStartTimePrint = DateTime.Now.ToString("HH:mm:ss");
+                    m_printer._LastPrintCount = 0;
+                    PrintDone = false;
+                    btnPushMessage.Content = "Bản tin đang được in...";
+                    btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#00CC00");
+                }
 
+                tbContentMessage.Text = MessageContent;
+            }
+        }
+        private void StopPrint()
+        {
+            // delete prev data
+            m_listPrintCompleteData.Clear();
+
+            string printCount = m_printer.GetPrintCounter();
+            uint num = Convert.ToUInt32(printCount);
+            PrintCount = num;
+
+            PrintDone = true;
+            btnPushMessage.Content = "Đẩy bản tin";
+            btnPushMessage.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#4887d3");
+
+            string date = DateTime.Now.ToString("dd-MM-yyyy");
+            m_strEndTimePrint = DateTime.Now.ToString("HH:mm:ss");
+
+            m_listPrintCompleteData.Add(date);
+            m_listPrintCompleteData.Add(m_strStartTimePrint);
+            m_listPrintCompleteData.Add(m_strEndTimePrint);
+            m_listPrintCompleteData.Add(cbbProductionShift.SelectedItem.ToString());
+            m_listPrintCompleteData.Add(DeliveryCode);
+            m_listPrintCompleteData.Add(m_strContentPrinting);
+            m_listPrintCompleteData.Add(printCount);
+
+            PrintCompletedEvent?.Invoke(m_listPrintCompleteData);
+        }
         private void btnConnection_Click(object sender, RoutedEventArgs e)
         {
             if (ConnectionState == ConnectionState.Connected)
@@ -750,6 +780,17 @@ namespace JetPrinter.ui
             else
             {
                 m_printer.ConnectPrinter();
+            }
+        }
+        public void PerformPushMessage()
+        {
+            if (PrintDone)
+                btnPushMessage_Click(null, null);
+            else
+            {
+                btnPushMessage_Click(null, null);
+                Thread.Sleep(1000);
+                btnPushMessage_Click(null, null);
             }
         }
     }
