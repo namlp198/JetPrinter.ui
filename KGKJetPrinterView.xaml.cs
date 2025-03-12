@@ -23,7 +23,13 @@ namespace JetPrinter.ui
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-
+    public enum enPrinterStatus
+    {
+        PrinterStatus_Unknow = 0,
+        PrinterStatus_Ready,
+        PrinterStatus_Warning,
+        PrinterStatus_Fault
+    }
     public partial class KGKJetPrinterView : UserControl, INotifyPropertyChanged
     {
         public static DependencyProperty MessageContentProperty = DependencyProperty.Register("MessageContent", typeof(string), typeof(KGKJetPrinterView), new PropertyMetadata(default(string), OnMessageContentChanged));
@@ -46,6 +52,11 @@ namespace JetPrinter.ui
         public delegate void PrintCountIncreaseHandler(uint nPrintCount);
         public event PrintCountIncreaseHandler PrintCountIncreaseEvent;
 
+        public delegate void PrinterStatusChangeHandler(enPrinterStatus printerStatus);
+        public event PrinterStatusChangeHandler PrinterStatusChangeEvent;
+
+        private enPrinterStatus m_printerStatus = enPrinterStatus.PrinterStatus_Unknow;
+
         private List<string> m_lstProductionShift = new List<string>() { "Ca 1", "Ca 2", "Ca 3" };
         private List<string> m_listPrintCompleteData = new List<string>();
 
@@ -64,7 +75,7 @@ namespace JetPrinter.ui
         private string m_strStartTimePrint = string.Empty;
         private string m_strEndTimePrint = string.Empty;
         private string m_strDeliveryCode = string.Empty;
-        private string m_strContentPrinting =string.Empty;
+        private string m_strContentPrinting = string.Empty;
         public string DeliveryCode
         {
             get => m_strDeliveryCode;
@@ -278,6 +289,21 @@ namespace JetPrinter.ui
         }
 
         public KGKJetPrinter KGKPrinter { get => m_printer; }
+
+        public enPrinterStatus PrinterStatus
+        {
+            get => m_printerStatus;
+            set
+            {
+                if (m_printerStatus != value)
+                {
+                    m_printerStatus = value;
+                    OnPropertyChanged("PrinterStatus");
+
+                    PrinterStatusChangeEvent?.Invoke(m_printerStatus);
+                }
+            }
+        }
 
         private KGKJetPrinter.PrintHeadState m_printHeadState;
         public KGKJetPrinter.PrintHeadState PrintHeadState
@@ -572,6 +598,8 @@ namespace JetPrinter.ui
                     ViscosityState = VisicosityState.Unknown;
                     break;
             }
+
+            PrinterStatus = CheckPrinterStatus();
         }
 
         private void M_printer_ConnectionStateChanged(KGKJetPrinter sender, KGKJetPrinter.ConnectionState state)
@@ -770,6 +798,37 @@ namespace JetPrinter.ui
             m_listPrintCompleteData.Add(printCount);
 
             PrintCompletedEvent?.Invoke(m_listPrintCompleteData);
+        }
+        private enPrinterStatus CheckPrinterStatus()
+        {
+            if (m_printer == null)
+                return enPrinterStatus.PrinterStatus_Unknow; // unknown
+
+            if (ConnectionState != ConnectionState.Connected)
+                return enPrinterStatus.PrinterStatus_Unknow;
+
+            if (PrintHeadState == PrintHeadState.Maintenance || InkTankState == LiquidQuantity.Empty || InkTankState == LiquidQuantity.SensorTrouble
+                || SolventTankState == LiquidQuantity.Empty || SolventTankState == LiquidQuantity.SensorTrouble || MainTankState == LiquidQuantity.Empty
+                || MainTankState == LiquidQuantity.SensorTrouble)
+            {
+                return enPrinterStatus.PrinterStatus_Fault; // fault
+            }
+
+            //if (ConnectionState == ConnectionState.Connected && (PrintHeadState != PrintHeadState.Maintenance || PrintHeadState != PrintHeadState.Unknown) &&
+            //    (InkTankState != LiquidQuantity.Unknown || InkTankState != LiquidQuantity.Empty || InkTankState != LiquidQuantity.SensorTrouble) &&
+            //    (SolventTankState != LiquidQuantity.Unknown || SolventTankState != LiquidQuantity.Empty || SolventTankState != LiquidQuantity.SensorTrouble) &&
+            //    (MainTankState != LiquidQuantity.Unknown || MainTankState != LiquidQuantity.Empty || MainTankState != LiquidQuantity.SensorTrouble))
+            //{
+            //    return enPrinterStatus.PrinterStatus_Ready; // ready
+            //}
+
+            if (ConnectionState == ConnectionState.Connected && PrintHeadState == PrintHeadState.Running)
+            {
+                return enPrinterStatus.PrinterStatus_Ready;
+            }
+            else
+                return enPrinterStatus.PrinterStatus_Warning;
+            
         }
         private void btnConnection_Click(object sender, RoutedEventArgs e)
         {
