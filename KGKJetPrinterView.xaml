@@ -336,7 +336,8 @@
                         <ComboBox Margin="5"
                                   FontSize="14"
                                   FontWeight="SemiBold" 
-                                  Name="cbbProductionShift"/>
+                                  Name="cbbProductionShift"
+                                  SelectedIndex="{Binding ShiftNow, Mode=TwoWay}"/>
                     </StackPanel>
                 </Grid>
                 <Grid VerticalAlignment="Center"

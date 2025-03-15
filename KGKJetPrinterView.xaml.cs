@@ -25,7 +25,6 @@ namespace JetPrinter.ui
     /// </summary>
     public enum enPrinterStatus
     {
-        PrinterStatus_Unknow = 0,
         PrinterStatus_Ready,
         PrinterStatus_Warning,
         PrinterStatus_Fault
@@ -55,7 +54,7 @@ namespace JetPrinter.ui
         public delegate void PrinterStatusChangeHandler(enPrinterStatus printerStatus);
         public event PrinterStatusChangeHandler PrinterStatusChangeEvent;
 
-        private enPrinterStatus m_printerStatus = enPrinterStatus.PrinterStatus_Unknow;
+        private enPrinterStatus m_printerStatus = enPrinterStatus.PrinterStatus_Fault;
 
         private List<string> m_lstProductionShift = new List<string>() { "Ca 1", "Ca 2", "Ca 3" };
         private List<string> m_listPrintCompleteData = new List<string>();
@@ -65,6 +64,7 @@ namespace JetPrinter.ui
         private string m_dateTimeSelected = DateTime.Now.ToString("ddMMyy");
         private int m_nCurrentMessageNo = -1;
         private int m_nTextModule = -1;
+        private int m_nShiftNow = 0;
 
         private bool m_bUseTimerCheckPrintCount = true;
         private bool m_bUseTimerCheckPrintState = true;
@@ -101,7 +101,7 @@ namespace JetPrinter.ui
             PrinterOrder = printerOrder;
             PrinterName = "MÁY IN " + printerOrder;
             cbbProductionShift.ItemsSource = m_lstProductionShift;
-            cbbProductionShift.SelectedIndex = 0;
+            //cbbProductionShift.SelectedIndex = 0;
 
             m_printer = new KGKJetPrinter(ip, m_nKgkPort);
             m_printer.AutoReconnect = false; // not auto reconnect
@@ -111,6 +111,7 @@ namespace JetPrinter.ui
             m_printer.Disconnected += M_printer_Disconnected;
             m_printer.PrintCountChanged += M_printer_PrintCountChanged;
         }
+
         public void SetParamsDefault(int nTextModule, bool bUseTimCheckPrintState, bool bUseTimCheckPrintCount,
                                     int nDelayTimCheckPrintState, int nDelayTimCheckPrintCount, bool bIsResetPrintCount)
         {
@@ -177,6 +178,18 @@ namespace JetPrinter.ui
             set
             {
                 m_sPrinterName = value;
+            }
+        }
+        public int ShiftNow
+        {
+            get => m_nShiftNow;
+            set
+            {
+                if (m_nShiftNow != value)
+                {
+                    m_nShiftNow = value;
+                    OnPropertyChanged("ShiftNow");
+                }
             }
         }
 
@@ -482,6 +495,8 @@ namespace JetPrinter.ui
                 //MessageContent = "";
                 tbContentMessage.Text = "";
             }));
+
+            PrinterStatus = CheckPrinterStatus();
         }
 
         private void M_printer_Connected(KGKJetPrinter sender)
@@ -672,23 +687,24 @@ namespace JetPrinter.ui
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void btnPrintStartStop_Click(object sender, RoutedEventArgs e)
+        public void PerformPushMessage()
         {
-            if (m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Stopping ||
-                m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen)
+            if (PrintDone)
+                btnPushMessage_Click(null, null);
+            else
             {
-                m_printer.StartPrinting();
-            }
-            else if (m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Running)
-            {
-                string s = string.Format("{0}{1} {2}", "Dừng in ", PrinterName, "?");
-                if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-                {
-                    m_printer.StopPrinting();
-                }
+                btnPushMessage_Click(null, null);
+                Thread.Sleep(1000);
+                btnPushMessage_Click(null, null);
             }
         }
-
+        public void ResetPrintCount()
+        {
+            if (m_printer.ResetPrintCounter(CurrentMessageNo))
+            {
+                MessageBox.Show("Reset Print Count Successfully!");
+            }
+        }
         private void datePickerPrinter_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
             var datePicker = sender as DatePicker;
@@ -704,13 +720,6 @@ namespace JetPrinter.ui
                     MessageContent = string.Empty;
                     MessageContent += DateTimeSelected;
                 }
-            }
-        }
-        public void ResetPrintCount()
-        {
-            if (m_printer.ResetPrintCounter(CurrentMessageNo))
-            {
-                MessageBox.Show("Reset Print Count Successfully!");
             }
         }
         private void btnPushMessage_Click(object sender, RoutedEventArgs e)
@@ -802,10 +811,10 @@ namespace JetPrinter.ui
         private enPrinterStatus CheckPrinterStatus()
         {
             if (m_printer == null)
-                return enPrinterStatus.PrinterStatus_Unknow; // unknown
+                return enPrinterStatus.PrinterStatus_Fault; // unknown
 
             if (ConnectionState != ConnectionState.Connected)
-                return enPrinterStatus.PrinterStatus_Unknow;
+                return enPrinterStatus.PrinterStatus_Fault;
 
             if (PrintHeadState == PrintHeadState.Maintenance || InkTankState == LiquidQuantity.Empty || InkTankState == LiquidQuantity.SensorTrouble
                 || SolventTankState == LiquidQuantity.Empty || SolventTankState == LiquidQuantity.SensorTrouble || MainTankState == LiquidQuantity.Empty
@@ -828,7 +837,7 @@ namespace JetPrinter.ui
             }
             else
                 return enPrinterStatus.PrinterStatus_Warning;
-            
+
         }
         private void btnConnection_Click(object sender, RoutedEventArgs e)
         {
@@ -841,15 +850,20 @@ namespace JetPrinter.ui
                 m_printer.ConnectPrinter();
             }
         }
-        public void PerformPushMessage()
+        private void btnPrintStartStop_Click(object sender, RoutedEventArgs e)
         {
-            if (PrintDone)
-                btnPushMessage_Click(null, null);
-            else
+            if (m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Stopping ||
+                m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.StoppingAndCoverOpen)
             {
-                btnPushMessage_Click(null, null);
-                Thread.Sleep(1000);
-                btnPushMessage_Click(null, null);
+                m_printer.StartPrinting();
+            }
+            else if (m_printer.GetPrinterState == KGKJetPrinter.PrintHeadState.Running)
+            {
+                string s = string.Format("{0}{1} {2}", "Dừng in ", PrinterName, "?");
+                if (MessageBox.Show(s, "Thông báo", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    m_printer.StopPrinting();
+                }
             }
         }
     }
