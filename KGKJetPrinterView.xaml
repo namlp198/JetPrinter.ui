@@ -39,7 +39,8 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Grid Opacity="{Binding ConnectionState, Converter={StaticResource ConnectionStateToOpacityConverter}}">
+                    <Grid Opacity="{Binding ConnectionState, Converter={StaticResource ConnectionStateToOpacityConverter}}"
+                          Name="gridPrinter">
                         <Image Source="{Binding PrintHeadState, Converter={StaticResource PrinterStateToPrinterImagePathConverter}}"
                                VerticalAlignment="Top"
                                HorizontalAlignment="Center"
@@ -54,6 +55,17 @@
                                    FontSize="12"
                                    Foreground="OrangeRed"
                                    FontWeight="Bold"/>
+                        <Popup x:Name="popupInformPrinter"
+                               AllowsTransparency="True"
+                               PlacementTarget="{Binding ElementName=gridPrinter}"
+                               Placement="Right"
+                               VerticalOffset="-2"
+                               HorizontalOffset="-190">
+                            <TextBlock FontSize="16"
+                                       FontWeight="Bold"
+                                       Foreground="Green"
+                                       Name="tbInformPrinter"/>
+                        </Popup>
                     </Grid>
                     <StackPanel Orientation="Vertical"
                                 Grid.Row="1"
@@ -307,7 +319,8 @@
                                  FontWeight="Bold"
                                  VerticalContentAlignment="Center"
                                  HorizontalContentAlignment="Center"
-                                 Text="{Binding MessageContent}" />
+                                 Text="{Binding MessageContent}" 
+                                 IsEnabled="{Binding PrintDone}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1"
                                 Orientation="Vertical"
@@ -325,7 +338,8 @@
                                     Margin="5"
                                     SelectedDate="{x:Static sys:DateTime.Now}"
                                     x:Name="datePickerPrinter"
-                                    SelectedDateChanged="datePickerPrinter_SelectedDateChanged" />
+                                    SelectedDateChanged="datePickerPrinter_SelectedDateChanged" 
+                                    IsEnabled="{Binding PrintDone}"/>
                         <TextBlock Text="Chọn ca sản xuất:"
                                    FontSize="14"
                                    FontWeight="SemiBold"
@@ -337,7 +351,8 @@
                                   FontSize="14"
                                   FontWeight="SemiBold" 
                                   Name="cbbProductionShift"
-                                  SelectedIndex="{Binding ShiftNow, Mode=TwoWay}"/>
+                                  SelectedIndex="{Binding ShiftNow, Mode=TwoWay}"
+                                  IsEnabled="{Binding PrintDone}"/>
                     </StackPanel>
                 </Grid>
                 <Grid VerticalAlignment="Center"

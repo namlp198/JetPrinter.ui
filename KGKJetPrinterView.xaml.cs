@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -55,6 +56,7 @@ namespace JetPrinter.ui
         public event PrinterStatusChangeHandler PrinterStatusChangeEvent;
 
         private enPrinterStatus m_printerStatus = enPrinterStatus.PrinterStatus_Fault;
+        private System.Timers.Timer m_timTurnOffPopup = new System.Timers.Timer();
 
         private List<string> m_lstProductionShift = new List<string>() { "Ca 1", "Ca 2", "Ca 3" };
         private List<string> m_listPrintCompleteData = new List<string>();
@@ -93,6 +95,8 @@ namespace JetPrinter.ui
             this.DataContext = this;
 
             Initialize(ip, printerOrder);
+
+            InitTimer();
         }
 
         private void Initialize(string ip, int printerOrder)
@@ -110,6 +114,22 @@ namespace JetPrinter.ui
             m_printer.Connected += M_printer_Connected;
             m_printer.Disconnected += M_printer_Disconnected;
             m_printer.PrintCountChanged += M_printer_PrintCountChanged;
+        }
+        private void InitTimer()
+        {
+            m_timTurnOffPopup.Interval = 6000;
+            m_timTurnOffPopup.Enabled = false;
+            m_timTurnOffPopup.Elapsed += M_timTurnOffPopup_Elapsed;
+        }
+
+        private void M_timTurnOffPopup_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            m_timTurnOffPopup.Stop();
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                popupInformPrinter.IsOpen = false;
+            }));
         }
 
         public void SetParamsDefault(int nTextModule, bool bUseTimCheckPrintState, bool bUseTimCheckPrintCount,
@@ -757,7 +777,14 @@ namespace JetPrinter.ui
         {
             if (m_printer.UpdateTextModuleNoChangeAttributes(MessageContent, TextModule))
             {
-                Thread.Sleep(200);
+                // inform on popup
+                tbInformPrinter.Text = "Đẩy bản tin thành công";
+                tbInformPrinter.Foreground = Brushes.Green;
+                popupInformPrinter.IsOpen = true;
+                m_timTurnOffPopup.Start();
+
+                m_printer.StartPrintCountTimer();
+                Thread.Sleep(150);
                 if (IsResetPrintCount)
                 {
                     if (m_printer.ResetPrintCounter(CurrentMessageNo))
@@ -783,6 +810,14 @@ namespace JetPrinter.ui
 
                 tbContentMessage.Text = MessageContent;
             }
+            else
+            {
+                // inform on popup
+                tbInformPrinter.Text = "Đẩy bản tin thất bại";
+                tbInformPrinter.Foreground = Brushes.Red;
+                popupInformPrinter.IsOpen = true;
+                m_timTurnOffPopup.Start();
+            }
         }
         private void StopPrint()
         {
@@ -791,7 +826,17 @@ namespace JetPrinter.ui
 
             string printCount = m_printer.GetPrintCounter();
             uint num = Convert.ToUInt32(printCount);
-            PrintCount = num;
+            //PrintCount = num;
+            PrintCount = 0;
+
+            if(m_printer.ResetPrintCounter(CurrentMessageNo))
+            {
+                // inform on popup
+                tbInformPrinter.Text = "Đã reset số đếm in";
+                tbInformPrinter.Foreground = Brushes.Green;
+                popupInformPrinter.IsOpen = true;
+                m_timTurnOffPopup.Start();
+            }
 
             PrintDone = true;
             btnPushMessage.Content = "Đẩy bản tin";
@@ -808,6 +853,7 @@ namespace JetPrinter.ui
             m_listPrintCompleteData.Add(m_strContentPrinting);
             m_listPrintCompleteData.Add(printCount);
 
+            m_printer.StopPrintCountTimer();
             PrintCompletedEvent?.Invoke(m_listPrintCompleteData);
         }
         private enPrinterStatus CheckPrinterStatus()
