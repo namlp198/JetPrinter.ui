@@ -48,7 +48,7 @@ namespace JetPrinter.ui
         public delegate void ReportPrinterHandler(string data);
         public event ReportPrinterHandler ReportFromPrinterEvent;
 
-        public delegate void PrintCountIncreaseHandler(uint nPrintCount);
+        public delegate void PrintCountIncreaseHandler(uint nPrintCount, string contentMes);
         public event PrintCountIncreaseHandler PrintCountIncreaseEvent;
 
         public delegate void PrinterStatusChangeHandler(enPrinterStatus printerStatus);
@@ -113,10 +113,11 @@ namespace JetPrinter.ui
         }
 
         public void SetParamsDefault(int nTextModule, bool bUseTimCheckPrintState, bool bUseTimCheckPrintCount,
-                                    int nDelayTimCheckPrintState, int nDelayTimCheckPrintCount, bool bIsResetPrintCount)
+                                    int nDelayTimCheckPrintState, int nDelayTimCheckPrintCount, bool bIsResetPrintCount, bool useAutoMode)
         {
             TextModule = nTextModule;
             IsResetPrintCount = bIsResetPrintCount;
+            UseAutoMode = useAutoMode;
 
             m_printer.UseTimerCheckPrintState = UseTimerCheckPrintState = bUseTimCheckPrintState;
             m_printer.UseTimerCheckPrintCount = UseTimerCheckPrintCount = bUseTimCheckPrintCount;
@@ -482,7 +483,7 @@ namespace JetPrinter.ui
         {
             PrintCount = m_printer._LastPrintCount;
 
-            PrintCountIncreaseEvent?.Invoke(PrintCount);
+            PrintCountIncreaseEvent?.Invoke(PrintCount, m_strContentPrinting);
         }
 
         private void M_printer_Disconnected(KGKJetPrinter sender)
@@ -772,6 +773,7 @@ namespace JetPrinter.ui
                 }
                 else
                 {
+                    m_strContentPrinting = MessageContent;
                     m_strStartTimePrint = DateTime.Now.ToString("HH:mm:ss");
                     m_printer._LastPrintCount = 0;
                     PrintDone = false;
