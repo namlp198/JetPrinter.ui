@@ -67,6 +67,8 @@ namespace JetPrinter.ui
         private int m_nCurrentMessageNo = -1;
         private int m_nTextModule = -1;
         private int m_nShiftNow = 0;
+        private int m_nPushTimes = 0;
+
 
         private bool m_bUseTimerCheckPrintCount = true;
         private bool m_bUseTimerCheckPrintState = true;
@@ -708,16 +710,18 @@ namespace JetPrinter.ui
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void PerformPushMessage()
+        public void PerformPushMessageAuto()
         {
-            if (PrintDone)
-                btnPushMessage_Click(null, null);
-            else
-            {
-                btnPushMessage_Click(null, null);
-                Thread.Sleep(1000);
-                btnPushMessage_Click(null, null);
-            }
+            //if (PrintDone)
+            //    btnPushMessage_Click(null, null);
+            //else
+            //{
+            //    btnPushMessage_Click(null, null);
+            //    Thread.Sleep(1000);
+            //    btnPushMessage_Click(null, null);
+            //}
+
+            PushMessageAuto();
         }
         public void ResetPrintCount()
         {
@@ -777,6 +781,8 @@ namespace JetPrinter.ui
         {
             if (m_printer.UpdateTextModuleNoChangeAttributes(MessageContent, TextModule))
             {
+                m_nPushTimes = 0;
+
                 // inform on popup
                 tbInformPrinter.Text = "Đẩy bản tin thành công";
                 tbInformPrinter.Foreground = Brushes.Green;
@@ -812,6 +818,17 @@ namespace JetPrinter.ui
             }
             else
             {
+                // push 3 times, if failure then show inform
+                tbInformPrinter.Text = "Đang đẩy lại bản tin...";
+                tbInformPrinter.Foreground = Brushes.DodgerBlue;
+                while (m_nPushTimes < 5)
+                {
+                    m_nPushTimes++;
+                    Thread.Sleep(2000);
+
+                    PushMessage();
+                }
+
                 // inform on popup
                 tbInformPrinter.Text = "Đẩy bản tin thất bại";
                 tbInformPrinter.Foreground = Brushes.Red;
@@ -828,6 +845,8 @@ namespace JetPrinter.ui
             uint num = Convert.ToUInt32(printCount);
             //PrintCount = num;
             PrintCount = 0;
+
+            Thread.Sleep(100);
 
             if(m_printer.ResetPrintCounter(CurrentMessageNo))
             {
@@ -855,6 +874,19 @@ namespace JetPrinter.ui
 
             m_printer.StopPrintCountTimer();
             PrintCompletedEvent?.Invoke(m_listPrintCompleteData);
+        }
+        private void PushMessageAuto()
+        {
+            if(m_bPrintDone)
+            {
+                PushMessage();
+            }
+            else
+            {
+                StopPrint();
+                Thread.Sleep(1000);
+                PushMessage();
+            }
         }
         private enPrinterStatus CheckPrinterStatus()
         {
