@@ -790,7 +790,9 @@ namespace JetPrinter.ui
                 m_timTurnOffPopup.Start();
 
                 m_printer.StartPrintCountTimer();
-                Thread.Sleep(150);
+
+                Thread.Sleep(200);
+
                 if (IsResetPrintCount)
                 {
                     if (m_printer.ResetPrintCounter(CurrentMessageNo))
@@ -846,7 +848,7 @@ namespace JetPrinter.ui
             //PrintCount = num;
             PrintCount = 0;
 
-            Thread.Sleep(100);
+            Thread.Sleep(200);
 
             if(m_printer.ResetPrintCounter(CurrentMessageNo))
             {
