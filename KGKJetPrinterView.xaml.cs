@@ -99,6 +99,7 @@ namespace JetPrinter.ui
 
             Initialize(ip, printerOrder);
 
+            InitTimerTurnOffPopup();
             InitTimerRepushMessage();
         }
 
@@ -126,9 +127,9 @@ namespace JetPrinter.ui
             m_printer.Disconnected += M_printer_Disconnected;
             m_printer.PrintCountChanged += M_printer_PrintCountChanged;
         }
-        private void InitTimer()
+        private void InitTimerTurnOffPopup()
         {
-            m_timTurnOffPopup.Interval = 6000;
+            m_timTurnOffPopup.Interval = 5000;
             m_timTurnOffPopup.Enabled = false;
             m_timTurnOffPopup.Elapsed += M_timTurnOffPopup_Elapsed;
         }
@@ -140,6 +141,7 @@ namespace JetPrinter.ui
             this.Dispatcher.Invoke(new Action(() =>
             {
                 popupInformPrinter.IsOpen = false;
+                tbInformPrinter.Text = "";
             }));
         }
 
@@ -830,12 +832,15 @@ namespace JetPrinter.ui
             else
             {
                 if (m_timerRepushMessage.Enabled == false)
+                {
+                    popupInformPrinter.IsOpen = true;
                     m_timerRepushMessage.Start();
+                }
             }
         }
         private void M_timerRepushMessage_Elapsed(object sender, ElapsedEventArgs e)
         {
-            this.Dispatcher.BeginInvoke(new Action(() =>
+            this.Dispatcher.Invoke(new Action(() =>
             {
                 if (m_nPushTimes >= 5)
                 {
@@ -845,9 +850,7 @@ namespace JetPrinter.ui
                     // inform on popup
                     tbInformPrinter.Text = "Đẩy bản tin thất bại";
                     tbInformPrinter.Foreground = Brushes.Red;
-                    popupInformPrinter.IsOpen = true;
                     m_timTurnOffPopup.Start();
-
                     return;
                 }
 
@@ -855,7 +858,6 @@ namespace JetPrinter.ui
 
                 tbInformPrinter.Text = "Đẩy lại bản tin lần " + m_nPushTimes;
                 tbInformPrinter.Foreground = Brushes.DodgerBlue;
-                popupInformPrinter.IsOpen = true;
 
                 PushMessage();
             }));
