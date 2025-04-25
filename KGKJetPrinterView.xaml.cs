@@ -69,7 +69,6 @@ namespace JetPrinter.ui
         private int m_nShiftNow = 0;
         private int m_nPushTimes = 0;
 
-
         private bool m_bUseTimerCheckPrintCount = true;
         private bool m_bUseTimerCheckPrintState = true;
         private bool m_bIsResetPrintCount = true;
@@ -80,6 +79,8 @@ namespace JetPrinter.ui
         private string m_strEndTimePrint = string.Empty;
         private string m_strDeliveryCode = string.Empty;
         private string m_strContentPrinting = string.Empty;
+
+        private System.Timers.Timer m_timerRepushMessage = new System.Timers.Timer();
         public string DeliveryCode
         {
             get => m_strDeliveryCode;
@@ -98,7 +99,15 @@ namespace JetPrinter.ui
 
             Initialize(ip, printerOrder);
 
-            InitTimer();
+            InitTimerRepushMessage();
+        }
+
+        private void InitTimerRepushMessage()
+        {
+            m_timerRepushMessage.Interval = 2000;
+            m_timerRepushMessage.AutoReset = true;
+            m_timerRepushMessage.Enabled = false;
+            m_timerRepushMessage.Elapsed += M_timerRepushMessage_Elapsed;
         }
 
         private void Initialize(string ip, int printerOrder)
@@ -820,23 +829,36 @@ namespace JetPrinter.ui
             }
             else
             {
-                // push 3 times, if failure then show inform
-                tbInformPrinter.Text = "Đang đẩy lại bản tin...";
-                tbInformPrinter.Foreground = Brushes.DodgerBlue;
-                while (m_nPushTimes < 5)
+                if (m_timerRepushMessage.Enabled == false)
+                    m_timerRepushMessage.Start();
+            }
+        }
+        private void M_timerRepushMessage_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (m_nPushTimes >= 5)
                 {
-                    m_nPushTimes++;
-                    Thread.Sleep(2000);
+                    m_timerRepushMessage.Stop();
+                    m_nPushTimes = 0;
 
-                    PushMessage();
+                    // inform on popup
+                    tbInformPrinter.Text = "Đẩy bản tin thất bại";
+                    tbInformPrinter.Foreground = Brushes.Red;
+                    popupInformPrinter.IsOpen = true;
+                    m_timTurnOffPopup.Start();
+
+                    return;
                 }
 
-                // inform on popup
-                tbInformPrinter.Text = "Đẩy bản tin thất bại";
-                tbInformPrinter.Foreground = Brushes.Red;
+                m_nPushTimes++;
+
+                tbInformPrinter.Text = "Đẩy lại bản tin lần " + m_nPushTimes;
+                tbInformPrinter.Foreground = Brushes.DodgerBlue;
                 popupInformPrinter.IsOpen = true;
-                m_timTurnOffPopup.Start();
-            }
+
+                PushMessage();
+            }));
         }
         private void StopPrint()
         {
@@ -850,7 +872,7 @@ namespace JetPrinter.ui
 
             Thread.Sleep(200);
 
-            if(m_printer.ResetPrintCounter(CurrentMessageNo))
+            if (m_printer.ResetPrintCounter(CurrentMessageNo))
             {
                 // inform on popup
                 tbInformPrinter.Text = "Đã reset số đếm in";
@@ -879,7 +901,7 @@ namespace JetPrinter.ui
         }
         private void PushMessageAuto()
         {
-            if(m_bPrintDone)
+            if (m_bPrintDone)
             {
                 PushMessage();
             }
