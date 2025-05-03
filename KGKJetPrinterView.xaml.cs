@@ -792,6 +792,10 @@ namespace JetPrinter.ui
         {
             if (m_printer.UpdateTextModuleNoChangeAttributes(MessageContent, TextModule))
             {
+                if (m_timerRepushMessage.Enabled == true)
+                {
+                    m_timerRepushMessage.Stop();
+                }
                 m_nPushTimes = 0;
 
                 // inform on popup
