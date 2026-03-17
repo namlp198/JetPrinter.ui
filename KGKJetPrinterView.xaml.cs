@@ -32,6 +32,9 @@ namespace JetPrinter.ui
     }
     public partial class KGKJetPrinterView : UserControl, INotifyPropertyChanged
     {
+        private static readonly log4net.ILog log =
+     log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public static DependencyProperty MessageContentProperty = DependencyProperty.Register("MessageContent", typeof(string), typeof(KGKJetPrinterView), new PropertyMetadata(default(string), OnMessageContentChanged));
 
         private static void OnMessageContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -126,6 +129,8 @@ namespace JetPrinter.ui
             m_printer.Connected += M_printer_Connected;
             m_printer.Disconnected += M_printer_Disconnected;
             m_printer.PrintCountChanged += M_printer_PrintCountChanged;
+
+            log.Info(string.Format("Initialize printer {0} success, ip {1}", printerOrder, ip));
         }
         private void InitTimerTurnOffPopup()
         {
@@ -156,6 +161,8 @@ namespace JetPrinter.ui
             m_printer.UseTimerCheckPrintCount = UseTimerCheckPrintCount = bUseTimCheckPrintCount;
             m_printer.DelayTimeCheckPrintState = nDelayTimCheckPrintState;
             m_printer.DelayTimeCheckPrintCount = nDelayTimCheckPrintCount;
+
+            log.Info($"Set Params default printer {m_nPrinterOrder} success");
         }
         public int CurrentMessageNo
         {
@@ -540,6 +547,12 @@ namespace JetPrinter.ui
             {
                 m_printer.CurrentMessageNo = m_nCurrentMessageNo;
                 CurrentMessage = "Bản tin số " + m_nCurrentMessageNo;
+
+                log.Info($"Select message {m_nCurrentMessageNo}");
+            }
+            else
+            {
+                log.Warn("Can not Select Message.");
             }
         }
 
